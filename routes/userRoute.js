@@ -4,6 +4,23 @@ const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 const {requireLogin} = require ("../middleware/auth");
 
+// // Register user
+// router.post("/register", async (req, res) => {
+//     const { name, email, password } = req.body;
+//     try {
+//         let user = await User.findOne({ email });
+//         if (user) {
+//             return res.status(400).json({ error: "User already exists" });
+//         }
+//         const hashedPassword = await bcrypt.hash(password, 10);
+//         user = new User({ name, email, password: hashedPassword });
+//         await user.save()
+//         res.status(201).json({ message: "User created successfully" });
+//     } catch (err) {
+//         console.log(err.message);
+//     }
+// });
+
 // Register user
 router.post("/register", async (req, res) => {
     const { name, email, password } = req.body;
@@ -14,8 +31,14 @@ router.post("/register", async (req, res) => {
         }
         const hashedPassword = await bcrypt.hash(password, 10);
         user = new User({ name, email, password: hashedPassword });
-        await user.save()
-        res.status(201).json({ message: "User created successfully" });
+        await user.save();
+
+        // Generate a JWT token and include it in the response
+        const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+            expiresIn: "1h",
+        });
+
+        res.status(201).json({ message: "User created successfully", token });
     } catch (err) {
         console.log(err.message);
     }
